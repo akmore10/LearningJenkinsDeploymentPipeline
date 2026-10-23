@@ -1,0 +1,88 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  Screen Flow that uses orderStatusPicker as a custom screen component.
+
+  The critical line is inside <Screen> → <fields> → <extensionName>:
+    <extensionName>c:orderStatusPicker</extensionName>
+
+  Salesforce resolves this reference at deploy time AND at runtime. If the
+  orderStatusPicker LWC is deleted while this Flow version is still Active,
+  any attempt to run OR redeploy the Flow will fail.
+-->
+<Flow xmlns="http://soap.sforce.com/2006/04/metadata">
+    <apiVersion>67.0</apiVersion>
+    <description>Guides a user through updating the status of an Order Summary record.</description>
+    <interviewLabel>Order Management Flow {!$Flow.CurrentDateTime}</interviewLabel>
+    <label>Order Management Flow</label>
+    <processMetadataValues>
+        <name>BuilderType</name>
+        <value><stringValue>LightningFlowBuilder</stringValue></value>
+    </processMetadataValues>
+    <processType>Flow</processType>
+    <status>Active</status>
+
+    <!-- Flow variable that captures the LWC output -->
+    <variables>
+        <name>selectedStatus</name>
+        <dataType>String</dataType>
+        <isCollection>false</isCollection>
+        <isInput>false</isInput>
+        <isOutput>false</isOutput>
+    </variables>
+
+    <!-- ════════════════════════════════════════════════════════════════════
+         SCREEN: uses orderStatusPicker LWC as a custom component.
+         <extensionName>c:orderStatusPicker</extensionName> is the hard
+         dependency. The namespace prefix "c" is the default org namespace.
+         ════════════════════════════════════════════════════════════════════ -->
+    <screens>
+        <name>Pick_Order_Status</name>
+        <label>Pick Order Status</label>
+        <locationX>176</locationX>
+        <locationY>158</locationY>
+        <allowBack>false</allowBack>
+        <allowFinish>true</allowFinish>
+        <allowPause>false</allowPause>
+        <connector>
+            <targetReference>Update_Order_Status</targetReference>
+        </connector>
+        <fields>
+            <name>StatusPicker</name>
+            <!-- This is the line that creates the Flow → LWC dependency.
+                 Delete the LWC without updating this screen and the deploy fails. -->
+            <extensionName>c:orderStatusPicker</extensionName>
+            <fieldType>ComponentInstance</fieldType>
+            <inputsOnNextNavToAssocScrn>UseStoredValues</inputsOnNextNavToAssocScrn>
+            <isRequired>true</isRequired>
+            <outputParameters>
+                <assignToReference>selectedStatus</assignToReference>
+                <name>selectedStatus</name>
+            </outputParameters>
+            <storeOutputAutomatically>false</storeOutputAutomatically>
+        </fields>
+        <showFooter>true</showFooter>
+        <showHeader>true</showHeader>
+    </screens>
+
+    <!-- Record Update: uses the value captured by the LWC -->
+    <recordUpdates>
+        <name>Update_Order_Status</name>
+        <label>Update Order Status</label>
+        <locationX>176</locationX>
+        <locationY>278</locationY>
+        <inputAssignments>
+            <field>Status__c</field>
+            <value><elementReference>selectedStatus</elementReference></value>
+        </inputAssignments>
+        <object>OrderSummary__c</object>
+    </recordUpdates>
+
+    <startElementReference>Pick_Order_Status</startElementReference>
+    <start>
+        <locationX>50</locationX>
+        <locationY>50</locationY>
+        <connector>
+            <targetReference>Pick_Order_Status</targetReference>
+        </connector>
+    </start>
+</Flow>

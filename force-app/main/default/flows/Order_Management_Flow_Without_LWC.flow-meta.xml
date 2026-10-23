@@ -1,0 +1,96 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  ╔══════════════════════════════════════════════════════════════════════════╗
+  ║  APPROACH B — Keep the Flow, remove the LWC screen component from it    ║
+  ╚══════════════════════════════════════════════════════════════════════════╝
+
+  This is the UPDATED version of Order_Management_Flow.flow-meta.xml.
+  The custom LWC screen has been replaced with a built-in Text Input field
+  so the Flow survives after orderStatusPicker is deleted.
+
+  Jenkins pipeline for Approach B (2 stages):
+
+    STAGE 1 — Deploy the updated Flow (drops the LWC reference):
+      sf deploy metadata --manifest manifest/package-replace-flow.xml
+
+    STAGE 2 — Delete the LWC (no Flow references it anymore):
+      sf deploy metadata \
+        --manifest manifest/package.xml \
+        --post-destructive-changes manifest/destructiveChanges-lwc-only.xml
+
+  You deploy this file as the NEW version of Order_Management_Flow by giving
+  it the exact same API name in <label> and using the same filename. In source
+  format the file IS the Flow version Salesforce will deploy.
+  Rename this file to Order_Management_Flow.flow-meta.xml when deploying.
+-->
+<Flow xmlns="http://soap.sforce.com/2006/04/metadata">
+    <apiVersion>67.0</apiVersion>
+    <description>Updated: LWC screen component replaced with a standard Text Input. Safe to delete orderStatusPicker after this version is deployed.</description>
+    <interviewLabel>Order Management Flow {!$Flow.CurrentDateTime}</interviewLabel>
+    <label>Order Management Flow</label>
+    <processMetadataValues>
+        <name>BuilderType</name>
+        <value><stringValue>LightningFlowBuilder</stringValue></value>
+    </processMetadataValues>
+    <processType>Flow</processType>
+    <status>Active</status>
+
+    <variables>
+        <name>selectedStatus</name>
+        <dataType>String</dataType>
+        <isCollection>false</isCollection>
+        <isInput>false</isInput>
+        <isOutput>false</isOutput>
+    </variables>
+
+    <!-- The LWC <extensionName>c:orderStatusPicker</extensionName> has been
+         removed. Replaced with a standard TextBox input. Once this version is
+         Active in the org, the orderStatusPicker LWC has zero Flow references
+         and is safe to delete via destructive changes. -->
+    <screens>
+        <name>Pick_Order_Status</name>
+        <label>Pick Order Status</label>
+        <locationX>176</locationX>
+        <locationY>158</locationY>
+        <allowBack>false</allowBack>
+        <allowFinish>true</allowFinish>
+        <allowPause>false</allowPause>
+        <connector>
+            <targetReference>Update_Order_Status</targetReference>
+        </connector>
+        <fields>
+            <name>StatusInput</name>
+            <fieldText>Enter the new order status (Pending, Processing, Completed, Cancelled)</fieldText>
+            <fieldType>InputField</fieldType>
+            <isRequired>true</isRequired>
+            <outputParameters>
+                <assignToReference>selectedStatus</assignToReference>
+                <name>value</name>
+            </outputParameters>
+            <dataType>String</dataType>
+        </fields>
+        <showFooter>true</showFooter>
+        <showHeader>true</showHeader>
+    </screens>
+
+    <recordUpdates>
+        <name>Update_Order_Status</name>
+        <label>Update Order Status</label>
+        <locationX>176</locationX>
+        <locationY>278</locationY>
+        <inputAssignments>
+            <field>Status__c</field>
+            <value><elementReference>selectedStatus</elementReference></value>
+        </inputAssignments>
+        <object>OrderSummary__c</object>
+    </recordUpdates>
+
+    <startElementReference>Pick_Order_Status</startElementReference>
+    <start>
+        <locationX>50</locationX>
+        <locationY>50</locationY>
+        <connector>
+            <targetReference>Pick_Order_Status</targetReference>
+        </connector>
+    </start>
+</Flow>
