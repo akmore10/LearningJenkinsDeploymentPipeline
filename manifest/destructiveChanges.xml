@@ -1,24 +1,8 @@
 <Package xmlns="http://soap.sforce.com/2006/04/metadata">
 
     <types>
-        <members>orderDashboard</members>
+        <members>orderStatusPicker</members>
         <name>LightningComponentBundle</name>
-    </types>
-
-    <types>
-        <members>OrderController</members>
-        <members>OrderService</members>
-        <name>ApexClass</name>
-    </types>
-
-    <types>
-        <members>OrderSummary__c.Status__c</members>
-        <name>CustomField</name>
-    </types>
-
-    <types>
-        <members>OrderSummary__c</members>
-        <name>CustomObject</name>
     </types>
 
     <version>67.0</version>
