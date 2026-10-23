@@ -1,4 +1,29 @@
-<?xml version="1.0" encoding="UTF-8"?>
 <Package xmlns="http://soap.sforce.com/2006/04/metadata">
+
+    <!-- Custom Object: root of the dependency chain -->
+    <types>
+        <members>OrderSummary__c</members>
+        <name>CustomObject</name>
+    </types>
+
+    <!-- Custom Field: belongs to OrderSummary__c, queried by OrderService -->
+    <types>
+        <members>OrderSummary__c.Status__c</members>
+        <name>CustomField</name>
+    </types>
+
+    <!-- Apex Classes: OrderService references the object; OrderController references OrderService -->
+    <types>
+        <members>OrderService</members>
+        <members>OrderController</members>
+        <name>ApexClass</name>
+    </types>
+
+    <!-- LWC: imports AuraEnabled methods from OrderController -->
+    <types>
+        <members>orderDashboard</members>
+        <name>LightningComponentBundle</name>
+    </types>
+
     <version>67.0</version>
 </Package>

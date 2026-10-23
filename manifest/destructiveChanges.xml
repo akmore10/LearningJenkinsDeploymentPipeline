@@ -1,8 +1,58 @@
 <?xml version="1.0" encoding="UTF-8"?>
+<!--
+  ╔══════════════════════════════════════════════════════════════════════════╗
+  ║  ONE-SHOT DESTRUCTIVE CHANGES  (use only when all components are listed) ║
+  ╚══════════════════════════════════════════════════════════════════════════╝
+
+  This file deletes the ENTIRE dependency chain in a single deployment.
+  Salesforce processes these atomically, so listing every component that
+  references the deleted metadata avoids compilation failures.
+
+  ⚠  WHEN THIS APPROACH IS SAFE
+  ────────────────────────────────
+  It works ONLY when every component that references the deleted metadata is
+  ALSO listed here. If even one referencing component is omitted (e.g. a test
+  class that queries OrderSummary__c, or a Flow that calls OrderController),
+  the deploy will fail with a compilation error.
+
+  ✅ PREFERRED APPROACH FOR JENKINS
+  ────────────────────────────────────
+  Use destructiveChangesPre.xml + destructiveChangesPost.xml instead. That
+  approach makes dependencies explicit and is easier to debug when a stage
+  fails mid-pipeline.
+
+  Jenkins command for this one-shot file:
+    sf deploy metadata \
+      --manifest manifest/package.xml \
+      --post-destructive-changes manifest/destructiveChanges.xml
+
+  Dependency chain being removed:
+    orderDashboard (LWC)
+      → OrderController → OrderService
+        → OrderSummary__c.Status__c → OrderSummary__c
+-->
 <Package xmlns="http://soap.sforce.com/2006/04/metadata">
+
     <types>
-        <members>TestClass</members>
+        <members>orderDashboard</members>
+        <name>LightningComponentBundle</name>
+    </types>
+
+    <types>
+        <members>OrderController</members>
+        <members>OrderService</members>
         <name>ApexClass</name>
     </types>
+
+    <types>
+        <members>OrderSummary__c.Status__c</members>
+        <name>CustomField</name>
+    </types>
+
+    <types>
+        <members>OrderSummary__c</members>
+        <name>CustomObject</name>
+    </types>
+
     <version>67.0</version>
 </Package>

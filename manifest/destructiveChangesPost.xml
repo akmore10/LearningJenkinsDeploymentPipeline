@@ -1,0 +1,60 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  ╔══════════════════════════════════════════════════════════════════════════╗
+  ║  POST-DESTRUCTIVE CHANGES  (providers — deleted LAST)                   ║
+  ╚══════════════════════════════════════════════════════════════════════════╝
+
+  These components sit at the BOTTOM of the dependency chain. They are only
+  safe to remove after every component that references them has already been
+  deleted by destructiveChangesPre.xml.
+
+  At this point in the pipeline:
+    • orderDashboard LWC is gone  → OrderController has no callers
+    • OrderController is gone     → OrderService has no callers
+    • OrderService is gone        → OrderSummary__c / Status__c have no Apex references
+
+  WHAT HAPPENS IF YOU SKIP THE PRE STEP?
+  ─────────────────────────────────────────
+  Trying to delete OrderService while OrderController still exists causes:
+
+    "Method does not exist or incorrect signature: OrderService.getOrdersByStatus"
+
+  Trying to delete OrderSummary__c while OrderService still exists causes:
+
+    "sObject type 'OrderSummary__c' is not supported"
+
+  These errors surface as deploy failures in the Jenkins stage, leaving the
+  org in a partial state that is painful to recover from.
+
+  ORDER WITHIN THIS FILE
+  ────────────────────────
+  Within a single destructive deploy, Salesforce processes CustomField
+  deletions before CustomObject deletions automatically (fields belong to
+  the object). Listing Status__c before OrderSummary__c here is just for
+  human readability — the platform handles the sequencing.
+-->
+<Package xmlns="http://soap.sforce.com/2006/04/metadata">
+
+    <!-- Step 3: Delete OrderService — no Apex callers remain after pre-step. -->
+    <types>
+        <members>OrderService</members>
+        <name>ApexClass</name>
+    </types>
+
+    <!-- Step 4: Delete the custom field — no SOQL references remain. -->
+    <types>
+        <members>OrderSummary__c.Status__c</members>
+        <name>CustomField</name>
+    </types>
+
+    <!-- Step 5: Delete the custom object — no Apex or field references remain.
+         NOTE: Salesforce will reject this if any of the object's fields are
+         still present and NOT included in this destructive deploy. All fields
+         must either be listed here or have been deleted in a prior deploy. -->
+    <types>
+        <members>OrderSummary__c</members>
+        <name>CustomObject</name>
+    </types>
+
+    <version>67.0</version>
+</Package>

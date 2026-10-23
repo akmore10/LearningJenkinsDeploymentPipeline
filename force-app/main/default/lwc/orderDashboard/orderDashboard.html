@@ -1,0 +1,33 @@
+<template>
+    <lightning-card title="Order Dashboard" icon-name="standard:orders">
+        <div class="slds-m-around_medium">
+
+            <template if:true={pendingCount.data}>
+                <p class="slds-text-heading_small slds-m-bottom_small">
+                    Pending Orders: {pendingCount.data}
+                </p>
+            </template>
+
+            <template if:true={pendingOrders.data}>
+                <template for:each={pendingOrders.data} for:item="order">
+                    <div key={order.Id} class="slds-box slds-m-bottom_x-small">
+                        <p>
+                            <strong>{order.Name}</strong> &mdash; {order.Status__c}
+                        </p>
+                        <lightning-button
+                            label="Complete"
+                            variant="brand"
+                            data-id={order.Id}
+                            onclick={handleComplete}>
+                        </lightning-button>
+                    </div>
+                </template>
+            </template>
+
+            <template if:true={pendingOrders.error}>
+                <p class="slds-text-color_error">Failed to load orders.</p>
+            </template>
+
+        </div>
+    </lightning-card>
+</template>
