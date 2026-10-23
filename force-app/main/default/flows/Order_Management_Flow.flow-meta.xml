@@ -77,7 +77,6 @@
         <object>OrderSummary__c</object>
     </recordUpdates>
 
-    <startElementReference>Pick_Order_Status</startElementReference>
     <start>
         <locationX>50</locationX>
         <locationY>50</locationY>
