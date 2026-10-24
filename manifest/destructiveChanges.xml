@@ -4,7 +4,6 @@
         <members>orderStatusPicker</members>
         <name>LightningComponentBundle</name>
     </types>
-
     <version>67.0</version>
 </Package>
 <!--
